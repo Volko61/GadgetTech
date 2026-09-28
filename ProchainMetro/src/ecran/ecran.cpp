@@ -21,6 +21,10 @@ void ecranAfficher(const Donnees& d) {
   } while (display.nextPage());
 }
 
+void ecranEffacer() {
+  display.clearScreen();
+}
+
 void ecranEteindre() {
   display.hibernate();
 }
