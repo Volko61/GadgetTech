@@ -1,7 +1,11 @@
-// Simulateur : le meme croquis que l'ESP32, mais le dessin part dans ecran.bmp
-#include "../HelloWorld/HelloWorld.ino"
+// Simulateur : meme code d'ecran que l'ESP32, mais le resultat part dans ecran.bmp.
+// Pas de Wi-Fi sur le PC : on affiche les donnees factices.
+#include "../ProchainMetro/src/donnees/donnees_fake.h"
+#include "../ProchainMetro/src/ecran/ecran.h"
 
 int main() {
-  setup();
+  ecranDemarrer();
+  ecranAfficher(DONNEES_FAKE);
+  ecranEteindre();
   return 0;
 }
