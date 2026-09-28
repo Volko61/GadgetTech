@@ -1,5 +1,5 @@
 #include "donnees_api.h"
-#include "../api/config.h"
+#include "../config/config.h"
 #include "../api/prim.h"
 #include <time.h>
 #include <stdio.h>
@@ -16,13 +16,15 @@ static void heureDans(char* texte, int minutes) {
 }
 
 void donneesDepuisApi(Donnees& d) {
-  d.ligne = METRO_LIGNE;
-  d.station = METRO_STATION;
-  d.marcheMinutes = METRO_MARCHE;
+  Trajet& trajet = config.trajets[0];
+  d.ligne = trajet.ligne.c_str();
+  d.station = trajet.station.c_str();
+  d.marcheMinutes = trajet.marche;
+  String arret = String("STIF:StopArea:SP:") + trajet.arret + ":";
 
   // On ne garde que les metros qu'on a le temps d'attraper en partant maintenant
   int minutes[10];
-  int n = primProchainsPassages(METRO_ARRET, METRO_DIRECTION, minutes, 10);
+  int n = primProchainsPassages(arret.c_str(), trajet.direction.c_str(), minutes, 10);
   int k = 0;
   for (int i = 0; i < n; i++) {
     if (minutes[i] >= d.marcheMinutes) minutes[k++] = minutes[i];
