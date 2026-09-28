@@ -10,6 +10,7 @@
 #define METRO_STATION "Place de Clichy"
 #define METRO_ARRET "STIF:StopArea:SP:XXXXX:"  // identifiant de la station, voir le README du dossier
 #define METRO_DIRECTION "Nation"               // terminus, tel qu'ecrit par PRIM
+#define METRO_MARCHE 5                         // minutes a pied de la maison a la station
 
 // Wi-Fi de la maison
 #define WIFI_NOM "NOM_DU_WIFI"

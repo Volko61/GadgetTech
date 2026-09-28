@@ -16,6 +16,8 @@ Recupere les prochains passages en temps reel depuis PRIM (Ile-de-France Mobilit
 5. `METRO_DIRECTION` est le terminus du metro, ecrit comme dans la reponse de PRIM
    (champ `DestinationName`), par exemple "Nation" ou "Porte Dauphine" pour la ligne 2.
    Les metros qui partent dans l'autre sens (ou d'une autre ligne) sont ignores.
+6. `METRO_MARCHE` : minutes a pied jusqu'a la station. Les metros qu'on n'a plus
+   le temps d'attraper ne sont pas affiches.
 
 ## Wi-Fi
 

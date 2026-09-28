@@ -1,5 +1,6 @@
 #pragma once
 #include "donnees.h"
 
-// Remplit les donnees avec le metro de config.h et ses prochains passages (API PRIM)
+// Remplit le metro de config.h, l'heure et les prochains passages (API PRIM).
+// La meteo n'est pas touchee.
 void donneesDepuisApi(Donnees& d);
