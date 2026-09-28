@@ -16,7 +16,6 @@ void ecranAfficher(const Donnees& d) {
     display.setTextColor(GxEPD_BLACK);
     dessinerBandeau(d);
     dessinerDepart(d);
-    dessinerFrise(d);
     dessinerMeteo(d);
   } while (display.nextPage());
 }
