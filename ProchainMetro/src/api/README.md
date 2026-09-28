@@ -30,3 +30,9 @@ int n = primProchainsPassages("STIF:StopArea:SP:71370:", "Nation", minutes, 2);
 ```
 
 Bibliotheque a installer : ArduinoJson (v7).
+
+## Meteo
+
+`meteo.cpp` utilise Open-Meteo (https://open-meteo.com) : gratuit, sans compte ni cle.
+La ville saisie dans la page de configuration est convertie en coordonnees
+(API de geocodage d'Open-Meteo), puis on lit la temperature et le temps actuels.
