@@ -1,8 +1,7 @@
 #pragma once
 #include "../../donnees/donnees.h"
 
-// Ecran 400x300 decoupe en quatre zones separees par un trait, de haut en bas
-void dessinerBandeau(const Donnees& d);  // y 0-84
-void dessinerDepart(const Donnees& d);   // y 84-174
-void dessinerFrise(const Donnees& d);    // y 174-238
-void dessinerMeteo(const Donnees& d);    // y 238-300
+// Ecran 400x300 en trois zones, de haut en bas
+void dessinerBandeau(const Donnees& d);  // y 0-60 : ligne, station, heure
+void dessinerDepart(const Donnees& d);   // y 60-250 : "Partir dans X min"
+void dessinerMeteo(const Donnees& d);    // y 250-300 : metro vise et meteo

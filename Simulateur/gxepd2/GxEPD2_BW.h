@@ -25,5 +25,6 @@ public:
     enregistrerBmp("ecran.bmp", *this);
     return false;
   }
+  void clearScreen() {}
   void hibernate() {}
 };
