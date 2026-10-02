@@ -16,7 +16,7 @@ static void heureDans(char* texte, int minutes) {
   strftime(texte, 6, "%H:%M", localtime(&t));
 }
 
-void donneesDepuisApi(Donnees& d) {
+void donneesDepuisApi(Donnees& d, bool meteo) {
   d.ligne = config.ligne.c_str();
   d.station = config.station.c_str();
 
@@ -54,5 +54,5 @@ void donneesDepuisApi(Donnees& d) {
   }
   Serial.printf("[DONNEES] %d passage(s), partir dans %d min\n", n, d.partirDans);
 
-  meteoActuelle(config.latitude, config.longitude, d.meteo, d.temperature);
+  if (meteo) meteoActuelle(config.latitude, config.longitude, d.meteo, d.temperature);
 }

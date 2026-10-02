@@ -22,6 +22,7 @@ public:
 
   void init(uint32_t vitesse, bool, uint16_t, bool) { Serial.begin(vitesse); }
   void setFullWindow() {}
+  void setPartialWindow(uint16_t, uint16_t, uint16_t, uint16_t) {}
   void firstPage() {}
   bool nextPage() {
     envoyer();
@@ -32,6 +33,7 @@ public:
     envoyer();
   }
   void hibernate() {}
+  void powerOff() {}
 
 private:
   // Une ligne "@ECRAN 400 300 <image en base64>" : 1 bit par pixel, ligne par ligne, 1 = blanc

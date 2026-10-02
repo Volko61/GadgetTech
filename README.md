@@ -60,7 +60,8 @@ Ou depuis l'IDE Arduino : ouvrir `ProchainMetro/ProchainMetro.ino`, carte "ESP32
    et choisir son Wi-Fi.
 2. Un second QR code ouvre la page de configuration : taper le debut du nom de sa station,
    toucher sa ligne, cocher ses terminus, regler son temps de marche.
-3. C'est tout : le choix est garde en memoire, l'ecran affiche les departs.
+3. C'est tout : le choix est garde en memoire, l'ecran affiche les departs et se met a jour
+   toutes les minutes (meteo toutes les 15 min). Entre deux mises a jour, l'ESP32 dort.
 
 ## Sans ecran
 
