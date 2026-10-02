@@ -1,6 +1,6 @@
 # Prochain Metro
 
-Un ecran e-paper pose pres de la porte qui dit quand partir de chez soi pour attraper
+Un ecran e-paper posé près de la porte qui dit quand partir de chez soi pour attraper
 son metro (ou RER), avec l'heure et la meteo. Temps reel via l'API PRIM d'Ile-de-France Mobilites.
 
 ## Materiel
