@@ -38,7 +38,7 @@ primPassages("STIF:StopPoint:Q:22115:", [](const char* ligne, const char* destin
 La reponse peut depasser 80 Ko dans les grandes gares : elle est lue au fil de l'eau
 (`useHTTP10` + filtre ArduinoJson) au lieu d'etre chargee d'un bloc en memoire.
 
-Bibliotheques a installer : ArduinoJson (v7) et wolfssl (wolfSSL Inc.).
+Bibliotheques a installer : ArduinoJson (v7), WiFiManager (tzapu) et wolfssl (wolfSSL Inc.).
 
 ## TLS 1.3 (wolfSSL)
 

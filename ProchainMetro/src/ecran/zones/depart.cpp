@@ -12,7 +12,11 @@ void dessinerDepart(const Donnees& d) {
 
   display.setFont(&FreeSansBold80pt7b);
   display.setCursor(10, 226);
-  if (d.partirDans < 0) display.print("--");  // pas de metro trouve
+  if (d.partirDans < 0) {  // pas de metro trouve : la police 80pt n'a que les chiffres, on dessine "--"
+    display.fillRect(20, 160, 50, 16, GxEPD_BLACK);
+    display.fillRect(84, 160, 50, 16, GxEPD_BLACK);
+    display.setCursor(134, 226);
+  }
   else display.print(d.partirDans);
 
   display.setFont(&FreeSansBold24pt7b);
