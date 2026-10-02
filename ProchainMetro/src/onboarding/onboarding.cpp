@@ -15,13 +15,15 @@ static void afficherQrWifi(WiFiManager*) {
   ecranAfficherQr("WIFI:S:" RESEAU_NOM ";T:WPA;P:" RESEAU_MDP ";;", "Wi-Fi", lignes, 7);
 }
 
-void wifiConnecter() {
+bool wifiConnecter(bool portail) {
   WiFiManager wm;
   wm.setTitle("Prochain Metro");
   std::vector<const char*> menu = {"wifi"};  // seulement "Configure WiFi" : pas de menus avances
   wm.setMenu(menu);
   wm.setAPCallback(afficherQrWifi);
-  wm.autoConnect(RESEAU_NOM, RESEAU_MDP);
+  wm.setConnectTimeout(20);
+  wm.setEnableConfigPortal(portail);
+  return wm.autoConnect(RESEAU_NOM, RESEAU_MDP);
 }
 
 static WebServer serveur(80);

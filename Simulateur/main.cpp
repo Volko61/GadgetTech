@@ -4,8 +4,8 @@
 #include "../ProchainMetro/src/ecran/ecran.h"
 
 int main() {
-  ecranDemarrer();
-  ecranAfficher(DONNEES_FAKE);
+  ecranDemarrer(true);
+  ecranAfficher(DONNEES_FAKE, true);
   ecranEteindre();
   return 0;
 }

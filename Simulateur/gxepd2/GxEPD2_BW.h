@@ -20,6 +20,7 @@ public:
 
   void init(uint32_t, bool, uint16_t, bool) {}
   void setFullWindow() {}
+  void setPartialWindow(uint16_t, uint16_t, uint16_t, uint16_t) {}
   void firstPage() {}
   bool nextPage() {
     enregistrerBmp("ecran.bmp", *this);
@@ -27,4 +28,5 @@ public:
   }
   void clearScreen() {}
   void hibernate() {}
+  void powerOff() {}
 };
