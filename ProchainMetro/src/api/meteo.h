@@ -1,6 +1,6 @@
 #pragma once
 #include "../donnees/donnees.h"
 
-// Demande la meteo actuelle de la ville a Open-Meteo (gratuit, sans cle d'API).
-// Le Wi-Fi doit deja etre connecte.
-void meteoActuelle(const char* ville, Meteo& meteo, int& temperature);
+// Demande la meteo actuelle a cet endroit a Open-Meteo (gratuit, sans cle d'API).
+// Ne change rien si la meteo n'a pas pu etre lue. Le Wi-Fi doit deja etre connecte.
+void meteoActuelle(float latitude, float longitude, Meteo& meteo, int& temperature);

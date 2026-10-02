@@ -4,14 +4,16 @@
 #include <Fonts/FreeSansBold12pt7b.h>
 #include <qrcode.h>  // generateur de QR code fourni par le core ESP32
 
-static const char* reseauNom;
-static const char* reseauMdp;
+static const char* titre;
+static const char** lignes;
+static int nbLignes;
 
 static void dessiner(esp_qrcode_handle_t qr) {
   int taille = esp_qrcode_get_size(qr);
-  int echelle = 260 / taille;
+  int echelle = 230 / taille;
   int x0 = 15;
   int y0 = (display.height() - taille * echelle) / 2;
+  int xTexte = x0 + taille * echelle + 15;  // le texte commence juste apres le QR code
 
   display.setFullWindow();
   display.firstPage();
@@ -25,34 +27,25 @@ static void dessiner(esp_qrcode_handle_t qr) {
 
     display.setTextColor(GxEPD_BLACK);
     display.setFont(&FreeSansBold12pt7b);
-    display.setCursor(265, 60);
-    display.print("Wi-Fi");
+    display.setCursor(xTexte, 60);
+    display.print(titre);
 
     display.setFont(&FreeSans9pt7b);
-    display.setCursor(265, 100);
-    display.print("1. Scannez");
-    display.setCursor(265, 120);
-    display.print("le QR code");
-    display.setCursor(265, 150);
-    display.print("2. Choisissez");
-    display.setCursor(265, 170);
-    display.print("votre Wi-Fi");
-
-    display.setCursor(265, 220);
-    display.print(reseauNom);
-    display.setCursor(265, 240);
-    display.print(reseauMdp);
+    for (int i = 0; i < nbLignes; i++) {
+      display.setCursor(xTexte, 100 + i * 22);
+      display.print(lignes[i]);
+    }
   } while (display.nextPage());
 }
 
-void ecranAfficherQrWifi(const char* nom, const char* mdp) {
-  reseauNom = nom;
-  reseauMdp = mdp;
-  String texte = String("WIFI:S:") + nom + ";T:WPA;P:" + mdp + ";;";
+void ecranAfficherQr(const char* contenu, const char* t, const char* l[], int n) {
+  titre = t;
+  lignes = l;
+  nbLignes = n;
 
   esp_qrcode_config_t config = {};
   config.display_func = dessiner;
   config.max_qrcode_version = 10;
   config.qrcode_ecc_level = ESP_QRCODE_ECC_LOW;
-  esp_qrcode_generate(&config, texte.c_str());
+  esp_qrcode_generate(&config, contenu);
 }

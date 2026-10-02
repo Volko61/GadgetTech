@@ -3,6 +3,9 @@
 #include "../api/prim.h"
 #include "../api/meteo.h"
 #include <time.h>
+#include <algorithm>
+
+#define MAX_PASSAGES 20
 
 static char heure[6];
 static char metro[6];
@@ -16,19 +19,40 @@ static void heureDans(char* texte, int minutes) {
 void donneesDepuisApi(Donnees& d) {
   d.ligne = config.ligne.c_str();
   d.station = config.station.c_str();
-  String arret = String("STIF:StopArea:SP:") + config.arret + ":";
+
+  // Les passages de notre ligne vers une des directions choisies, a chacun de nos arrets
+  int minutes[MAX_PASSAGES];
+  int n = 0;
+  String directions = "|" + config.directions + "|";
+  int debut = 0;
+  while (debut < (int)config.arrets.length()) {
+    int fin = config.arrets.indexOf(',', debut);
+    if (fin < 0) fin = config.arrets.length();
+    String arret = config.arrets.substring(debut, fin);
+    debut = fin + 1;
+
+    primPassages(arret.c_str(), [&](const char* ligne, const char* destination, int m) {
+      if (n < MAX_PASSAGES && config.ligneRef == ligne && directions.indexOf("|" + String(destination) + "|") >= 0)
+        minutes[n++] = m;
+    });
+  }
+  std::sort(minutes, minutes + n);
 
   // Premier metro qu'on a le temps d'attraper en partant maintenant
-  int minutes[10];
-  int n = primProchainsPassages(arret.c_str(), config.direction.c_str(), minutes, 10);
   int i = 0;
-  while (i < n - 1 && minutes[i] < config.marche) i++;
+  while (i < n && minutes[i] < config.marche) i++;
 
   heureDans(heure, 0);
-  heureDans(metro, minutes[i]);
   d.heure = heure;
-  d.metro = metro;
-  d.partirDans = minutes[i] - config.marche;
+  if (i == n) {  // aucun metro (nuit, erreur PRIM) : l'ecran affiche "--"
+    d.metro = "--:--";
+    d.partirDans = -1;
+  } else {
+    heureDans(metro, minutes[i]);
+    d.metro = metro;
+    d.partirDans = minutes[i] - config.marche;
+  }
+  Serial.printf("[DONNEES] %d passage(s), partir dans %d min\n", n, d.partirDans);
 
-  meteoActuelle(config.ville.c_str(), d.meteo, d.temperature);
+  meteoActuelle(config.latitude, config.longitude, d.meteo, d.temperature);
 }

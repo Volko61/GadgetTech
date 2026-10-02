@@ -12,7 +12,8 @@ void dessinerDepart(const Donnees& d) {
 
   display.setFont(&FreeSansBold80pt7b);
   display.setCursor(10, 226);
-  display.print(d.partirDans);
+  if (d.partirDans < 0) display.print("--");  // pas de metro trouve
+  else display.print(d.partirDans);
 
   display.setFont(&FreeSansBold24pt7b);
   display.setCursor(display.getCursorX() + 12, 226);

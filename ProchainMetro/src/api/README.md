@@ -9,30 +9,55 @@ Recupere les prochains passages en temps reel depuis PRIM (Ile-de-France Mobilit
 3. Copier `cle.exemple.h` en `cle.h` et coller la cle dans `PRIM_CLE`.
    `cle.h` est dans le `.gitignore`, il n'est jamais commite.
 
-## Ce que l'utilisateur saisit dans la page de configuration
+## Ce que l'utilisateur fait (onboarding)
 
-- Identifiant PRIM de la station : sur PRIM, jeu de donnees
-  "Referentiel des arrets : Zones d'arrets" (ou "Arrets et lignes associees"),
-  chercher sa station et prendre l'identifiant de la zone d'arret (un nombre, par exemple 71370).
-- Direction : le terminus du metro, ecrit comme dans la reponse de PRIM
-  (champ `DestinationName`), par exemple "Nation" ou "Porte Dauphine" pour la ligne 2.
-  Les metros qui partent dans l'autre sens (ou d'une autre ligne) sont ignores.
-- Minutes de marche : les metros qu'on n'a plus le temps d'attraper ne sont pas affiches.
+Rien a recopier : sur la page servie par l'ESP32 (`src/onboarding/page_station.h`),
+il tape le debut du nom de sa station, touche sa ligne, coche ses terminus et regle
+son temps de marche.
+
+- La recherche utilise l'open data IDFM, jeu de donnees `arrets-lignes` (sans cle),
+  directement depuis le telephone. Il donne pour chaque ligne d'une station
+  l'identifiant d'arret et les coordonnees GPS (utilisees pour la meteo).
+  Conversion vers PRIM :
+  - `IDFM:monomodalStopPlace:58572` -> `STIF:StopArea:SP:58572:` (gare RER / train)
+  - `IDFM:22115` -> `STIF:StopPoint:Q:22115:` (quai de metro, un par sens)
+  - ligne `IDFM:C01729` -> `STIF:Line::C01729:`
+- Les terminus proposes sont ceux annonces en ce moment par PRIM (route `/directions`
+  de l'ESP32, qui seul connait la cle).
 
 ## Utilisation
 
 ```cpp
 #include "src/api/prim.h"
 
-int minutes[2];
-int n = primProchainsPassages("STIF:StopArea:SP:71370:", "Nation", minutes, 2);
-// minutes[0] : dans combien de minutes part le prochain metro
+primPassages("STIF:StopPoint:Q:22115:", [](const char* ligne, const char* destination, int minutes) {
+  // ligne : "STIF:Line::C01372:", destination : "Nation", minutes : depart dans X min
+});
 ```
 
-Bibliotheque a installer : ArduinoJson (v7).
+La reponse peut depasser 80 Ko dans les grandes gares : elle est lue au fil de l'eau
+(`useHTTP10` + filtre ArduinoJson) au lieu d'etre chargee d'un bloc en memoire.
+
+Bibliotheques a installer : ArduinoJson (v7) et wolfssl (wolfSSL Inc.).
+
+## TLS 1.3 (wolfSSL)
+
+Le serveur de PRIM (derriere Cloudflare) n'accepte que TLS 1.3, et exige le SNI.
+Le core ESP32 Arduino (mbedTLS) ne fait que TLS 1.2 : `tls13.cpp` passe donc par wolfSSL.
+
+wolfSSL doit etre compile avec le SNI. Dans
+`Documents\Arduino\libraries\wolfssl\src\user_settings.h`, section ESP32
+(juste apres `#define USE_CERT_BUFFERS_2048`), ajouter :
+
+```c
+#define HAVE_SNI
+```
+
+A refaire apres chaque mise a jour de la bibliotheque wolfssl
+(sinon la compilation s'arrete sur un message qui renvoie ici).
+Licence de wolfSSL : GPL-3.0.
 
 ## Meteo
 
-`meteo.cpp` utilise Open-Meteo (https://open-meteo.com) : gratuit, sans compte ni cle.
-La ville saisie dans la page de configuration est convertie en coordonnees
-(API de geocodage d'Open-Meteo), puis on lit la temperature et le temps actuels.
+`meteo.cpp` utilise Open-Meteo (https://open-meteo.com) : gratuit, sans compte ni cle,
+a partir des coordonnees de la station.
