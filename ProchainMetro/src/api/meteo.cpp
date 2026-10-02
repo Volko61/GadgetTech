@@ -3,16 +3,6 @@
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 
-static void lireJson(String url, JsonDocument& doc) {
-  WiFiClientSecure client;
-  client.setInsecure();  // pas de verification du certificat
-  HTTPClient http;
-  http.begin(client, url);
-  http.GET();
-  deserializeJson(doc, http.getString());
-  http.end();
-}
-
 // Code meteo WMO d'Open-Meteo vers nos quatre icones
 static Meteo icone(int code) {
   if (code <= 1) return SOLEIL;
@@ -21,15 +11,21 @@ static Meteo icone(int code) {
   return PLUIE;  // pluie, neige, orage
 }
 
-void meteoActuelle(const char* ville, Meteo& meteo, int& temperature) {
-  JsonDocument lieu;
-  lireJson(String("https://geocoding-api.open-meteo.com/v1/search?count=1&name=") + ville, lieu);
-  float latitude = lieu["results"][0]["latitude"];
-  float longitude = lieu["results"][0]["longitude"];
+void meteoActuelle(float latitude, float longitude, Meteo& meteo, int& temperature) {
+  WiFiClientSecure client;
+  client.setInsecure();  // pas de verification du certificat
+  HTTPClient http;
+  http.begin(client, String("https://api.open-meteo.com/v1/forecast?current=temperature_2m,weather_code&latitude=")
+    + String(latitude, 4) + "&longitude=" + String(longitude, 4));
+  int code = http.GET();
 
   JsonDocument doc;
-  lireJson(String("https://api.open-meteo.com/v1/forecast?current=temperature_2m,weather_code&latitude=")
-    + latitude + "&longitude=" + longitude, doc);
+  if (code == 200) deserializeJson(doc, http.getString());
+  http.end();
+  if (doc["current"]["temperature_2m"].isNull()) {
+    Serial.printf("[METEO] pas de reponse (HTTP %d)\n", code);
+    return;
+  }
   temperature = round(doc["current"]["temperature_2m"].as<float>());
   meteo = icone(doc["current"]["weather_code"]);
 }

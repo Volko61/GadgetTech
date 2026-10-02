@@ -1,43 +1,62 @@
 #include "prim.h"
 #include "cle.h"
 #include "heure.h"
-#include <HTTPClient.h>
-#include <WiFiClientSecure.h>
+#include "tls13.h"
 #include <ArduinoJson.h>
 
-#define PRIM_URL "https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring"
+#define PRIM_HOTE "prim.iledefrance-mobilites.fr"
 
-int primProchainsPassages(const char* arret, const char* direction, int minutes[], int max) {
-  WiFiClientSecure client;
-  client.setInsecure();  // pas de verification du certificat
+bool primPassages(const char* arret, Passage passage) {
+  Tls13 serveur;  // PRIM n'accepte que TLS 1.3
+  if (!serveur.ouvrir(PRIM_HOTE)) return false;
 
-  HTTPClient http;
-  http.begin(client, String(PRIM_URL) + "?MonitoringRef=" + arret);
-  http.addHeader("apikey", PRIM_CLE);
-  http.GET();
+  // HTTP/1.0 : la reponse n'est pas decoupee en morceaux ("chunked"), on lit le JSON au fil de l'eau
+  serveur.print(String("GET /marketplace/stop-monitoring?MonitoringRef=") + arret + " HTTP/1.0\r\n"
+    "Host: " PRIM_HOTE "\r\n"
+    "apikey: " PRIM_CLE "\r\n"
+    "Accept: application/json\r\n"
+    "Connection: close\r\n\r\n");
 
-  // On ne garde que les champs utiles de la reponse SIRI
+  serveur.setTimeout(10000);
+  int code = serveur.readStringUntil('\n').substring(9, 12).toInt();  // "HTTP/1.1 200 OK"
+  if (code != 200) {  // cle refusee, arret inconnu...
+    Serial.printf("[PRIM] %s : erreur HTTP %d\n", arret, code);
+    return false;
+  }
+  serveur.find("\r\n\r\n");  // saute les en-tetes
+
+  // La reponse SIRI peut faire 100 Ko (grosses gares) : on ne garde que les champs utiles
   JsonDocument filtre;
   filtre["Siri"]["ServiceDelivery"]["ResponseTimestamp"] = true;
   JsonObject f = filtre["Siri"]["ServiceDelivery"]["StopMonitoringDelivery"][0]["MonitoredStopVisit"][0]["MonitoredVehicleJourney"].to<JsonObject>();
+  f["LineRef"]["value"] = true;
   f["DestinationName"][0]["value"] = true;
   f["MonitoredCall"]["ExpectedDepartureTime"] = true;
 
   JsonDocument doc;
-  deserializeJson(doc, http.getString(), DeserializationOption::Filter(filtre));
-  http.end();
+  // SIRI imbrique plus de 10 niveaux (limite par defaut d'ArduinoJson)
+  DeserializationError erreur = deserializeJson(doc, serveur, DeserializationOption::Filter(filtre),
+    DeserializationOption::NestingLimit(20));
+  serveur.fermer();
 
   JsonObject livraison = doc["Siri"]["ServiceDelivery"];
-  int maintenant = heureEnSecondes(livraison["ResponseTimestamp"]);
-  JsonArray visites = livraison["StopMonitoringDelivery"][0]["MonitoredStopVisit"];
-
-  int n = 0;
-  for (JsonObject visite : visites) {
-    if (n == max) break;
-    JsonObject trajet = visite["MonitoredVehicleJourney"];
-    if (strcmp(trajet["DestinationName"][0]["value"], direction) != 0) continue;  // metro dans l'autre sens
-    minutes[n] = (heureEnSecondes(trajet["MonitoredCall"]["ExpectedDepartureTime"]) - maintenant) / 60;
-    n++;
+  const char* reponse = livraison["ResponseTimestamp"];
+  if (erreur || !reponse) {
+    Serial.printf("[PRIM] %s : reponse illisible (%s)\n", arret, erreur.c_str());
+    return false;
   }
-  return n;
+  int maintenant = heureEnSecondes(reponse);
+
+  for (JsonObject visite : livraison["StopMonitoringDelivery"][0]["MonitoredStopVisit"].as<JsonArray>()) {
+    JsonObject trajet = visite["MonitoredVehicleJourney"];
+    const char* ligne = trajet["LineRef"]["value"];
+    const char* destination = trajet["DestinationName"][0]["value"];
+    const char* depart = trajet["MonitoredCall"]["ExpectedDepartureTime"];
+    if (!ligne || !destination || !depart) continue;
+
+    int secondes = heureEnSecondes(depart) - maintenant;
+    if (secondes < -12 * 3600) secondes += 24 * 3600;  // depart apres minuit
+    passage(ligne, destination, secondes / 60);
+  }
+  return true;
 }
