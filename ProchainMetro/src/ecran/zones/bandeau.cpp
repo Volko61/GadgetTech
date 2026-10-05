@@ -5,7 +5,7 @@
 #include <Fonts/FreeSansBold12pt7b.h>
 #include <Fonts/FreeSansBold18pt7b.h>
 
-#define HAUT 10  // marge en haut de l'ecran
+#define HAUT 25  // marge en haut de l'ecran
 
 void dessinerBandeau(const Donnees& d) {
   // Pastille de la ligne, comme sur les plans du metro
