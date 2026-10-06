@@ -12,10 +12,8 @@
 #endif
 #define radians(deg) ((deg) * PI / 180)
 
-// Declares par Adafruit GFX, pas utilises par ProchainMetro
+// Memoire RTC de l'ESP32 (garde pendant le sommeil profond) : une variable normale sur PC
+#define RTC_DATA_ATTR
+
+// Declare par Adafruit GFX, pas utilise par ProchainMetro
 class __FlashStringHelper;
-class String {
-public:
-  unsigned int length() const { return 0; }
-  const char* c_str() const { return ""; }
-};

@@ -26,6 +26,7 @@ public:
     enregistrerBmp("ecran.bmp", *this);
     return false;
   }
+  bool nextPageToPrevious() { return false; }  // l'ancienne image : rien a enregistrer
   void clearScreen() {}
   void hibernate() {}
   void powerOff() {}

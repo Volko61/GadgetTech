@@ -41,18 +41,26 @@ void donneesDepuisApi(Donnees& d, bool meteo) {
   // Premier metro qu'on a le temps d'attraper en partant maintenant
   int i = 0;
   while (i < n && minutes[i] < config.marche) i++;
+  int vise = i < n ? minutes[i] : -1;
+
+  // Tous les passages connus sont trop proches : on estime le suivant avec l'intervalle moyen
+  if (i == n && n >= 2) {
+    int intervalle = std::max(1, (minutes[n - 1] - minutes[0]) / (n - 1));
+    vise = minutes[n - 1];
+    while (vise < config.marche) vise += intervalle;
+  }
 
   heureDans(heure, 0);
   d.heure = heure;
-  if (i == n) {  // aucun metro (nuit, erreur PRIM) : l'ecran affiche "--"
+  if (vise < 0) {  // aucun metro (nuit, erreur PRIM) : l'ecran affiche "--"
     d.metro = "--:--";
     d.partirDans = -1;
   } else {
-    heureDans(metro, minutes[i]);
+    heureDans(metro, vise);
     d.metro = metro;
-    d.partirDans = minutes[i] - config.marche;
+    d.partirDans = vise - config.marche;
   }
-  Serial.printf("[DONNEES] %d passage(s), partir dans %d min\n", n, d.partirDans);
+  Serial.printf("[DONNEES] %d passage(s), marche %d min, partir dans %d min\n", n, config.marche, d.partirDans);
 
   if (meteo) meteoActuelle(config.latitude, config.longitude, d.meteo, d.temperature);
 }

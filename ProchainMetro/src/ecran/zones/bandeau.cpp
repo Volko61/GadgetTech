@@ -15,10 +15,13 @@ void dessinerBandeau(const Donnees& d) {
   ecrireCentre(d.ligne, 38, HAUT + 47);
   display.setTextColor(GxEPD_BLACK);
 
-  display.setFont(&FreeSansBold12pt7b);
-  display.setCursor(72, HAUT + 43);
-  display.print(d.station);
-
   display.setFont(&FreeSans12pt7b);
+  int16_t x1, y1;
+  uint16_t w, h;
+  display.getTextBounds(d.heure, 0, HAUT + 43, &x1, &y1, &w, &h);
   ecrireDroite(d.heure, 384, HAUT + 43);
+
+  // Nom de la station, coupe pour ne pas deborder sur l'heure
+  display.setFont(&FreeSansBold12pt7b);
+  ecrireCoupe(d.station, 72, HAUT + 43, 384 - w - 12 - 72);
 }
